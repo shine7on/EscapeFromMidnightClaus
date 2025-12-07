@@ -1,4 +1,11 @@
 package com.example.escaperoomapp.model
 
-class GameState {
-}
+/*
+    GameState represents the entire current world of your escape room.
+ */
+data class GameState(
+    val currentWall: Wall = Wall.WALLCENTER,
+    val inventory: List<Item> = emptyList(),
+    val flags: PuzzleFlags = PuzzleFlags(),
+    val wreathInput: List<Direction> = emptyList()
+)

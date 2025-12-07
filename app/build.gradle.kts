@@ -2,6 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kapt)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt.gradle)
+
     alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
@@ -58,12 +62,24 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // Retrofit
-    implementation(libs.retrofit)
-    implementation(libs.kotlinx.serialization)
-    implementation(libs.serialization.converter)
-    // Coil
-    implementation(libs.coil.compose)
-    // Placeholder
-    implementation(libs.compose.placeholder)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.material3.adaptive.navigation3)
+    implementation(libs.kotlinx.serialization.core)
+
+    // Hilt Dependency Injection
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+    // Hilt and instrumented tests.
+    androidTestImplementation(libs.hilt.android.testing)
+    // Hilt and Robolectric tests.
+    testImplementation(libs.hilt.android.testing)
+
+    // Room Database
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx) // For Coroutines support
+    ksp(libs.androidx.room.compiler)      // Use ksp for the compiler
+
 }
