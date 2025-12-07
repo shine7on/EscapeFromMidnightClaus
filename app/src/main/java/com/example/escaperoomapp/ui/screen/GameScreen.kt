@@ -3,7 +3,7 @@ package com.example.escaperoomapp.ui.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
+import com.example.escaperoomapp.ui.screen.zoom.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
+import com.example.escaperoomapp.model.Item
+import com.example.escaperoomapp.model.ObjectID
 import com.example.escaperoomapp.model.Wall
 import com.example.escaperoomapp.viewmodel.GameViewModel
 
@@ -25,7 +27,7 @@ fun GameScreen(
     val state = vm.gameState.value
 
     Box(
-        modifier = Modifier.fillMaxSize().padding(16.dp)
+        modifier = Modifier.fillMaxSize()
     ) {
 
         when (state.currentWall) {
@@ -34,10 +36,29 @@ fun GameScreen(
             Wall.WALLRIGHT -> WallRightScreen(vm)
         }
 
+        if (vm.isWindowZoomOpen.value) WindowZoomScreen { vm.closeWindowZoom() }
+        if (vm.isWreathPuzzleOpen.value) WreathZoomScreen { vm.closeWreathPuzzle() }
+        if (vm.isPresentZoomOpen.value) PresentZoomScreen { vm.closePresentZoom() }
+        if (vm.isDoorZoomOpen.value) DoorZoomScreen { vm.closeDoorZoom() }
+        if (vm.isPaintingZoomOpen.value) { PaintingZoomDialog { vm.closePaintingZoom() } }
+        if (vm.isShelfZoomOpen.value) {
+            val flags = vm.gameState.value.flags
+
+            ShelfZoomScreen(
+                hasOrnament = vm.hasItem(Item.SnowmanOrnament),
+                ornamentPlaced = flags.ornamentPlaced,
+                onPlace = { vm.interact(ObjectID.WL_ORNAMENT_SHELF) },
+                onDismiss = { vm.closeShelfZoom() }
+            )
+        }
+        if (vm.isFireplaceZoomOpen.value) FireplaceZoomScreen(vm) { vm.closeFireplaceZoom() }
+
+
+
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 40.dp),
+                .padding(bottom = 32.dp)
         ) {
             BottomNav(vm)
         }
@@ -62,7 +83,7 @@ fun InventoryBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = 90.dp),   // ← raises it higher!
+            .padding(bottom = 80.dp),   // ← raises it higher!
         contentAlignment = Alignment.Center
     ) {
 
@@ -145,14 +166,14 @@ fun BottomNav(vm: GameViewModel) {
         if (wall != Wall.WALLLEFT) {
             ArrowButton(text = "←") { vm.moveLeft() }
         } else {
-            Spacer(modifier = Modifier.width(80.dp))
+            Spacer(modifier = Modifier.width(50.dp))
         }
 
         // RIGHT ARROW (only if allowed)
         if (wall != Wall.WALLRIGHT) {
             ArrowButton(text = "→") { vm.moveRight() }
         } else {
-            Spacer(modifier = Modifier.width(80.dp))
+            Spacer(modifier = Modifier.width(50.dp))
         }
     }
 }

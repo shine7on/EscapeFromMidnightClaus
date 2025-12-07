@@ -86,6 +86,29 @@ class GameViewModel  : ViewModel() {
     fun closeShelfZoom() { isShelfZoomOpen.value = false }
     fun closeDoorZoom() { isDoorZoomOpen.value = false }
 
+    var isPaintingZoomOpen = mutableStateOf(false)
+
+    fun openPaintingZoom() {
+        isPaintingZoomOpen.value = true
+    }
+
+    fun closePaintingZoom() {
+        isPaintingZoomOpen.value = false
+    }
+
+    var isFireplaceZoomOpen = mutableStateOf(false)
+
+    fun openFireplaceZoom() {
+        isFireplaceZoomOpen.value = true
+    }
+
+    fun closeFireplaceZoom() {
+        isFireplaceZoomOpen.value = false
+    }
+
+
+
+
     fun addItem(item: Item) {
         val current = gameState.value
         val new = current.inventory + item
@@ -198,6 +221,9 @@ class GameViewModel  : ViewModel() {
 
             // DONE
             ObjectID.WL_FIREPLACE -> {
+                // Always open zoom first
+                openFireplaceZoom()
+
                 if (current.flags.fireplaceLit) return
 
                 // Must have the match to fire
@@ -219,7 +245,6 @@ class GameViewModel  : ViewModel() {
             ObjectID.WL_ORNAMENT_SHELF -> {
                 // If ornament already placed, ignore
                 if (current.flags.ornamentPlaced || current.flags.ornamentShelfOrdered) return
-
                 // Must have the ornament to place one
                 if (!hasItem(Item.SnowmanOrnament)) return
 
@@ -238,14 +263,14 @@ class GameViewModel  : ViewModel() {
 
             // DONE
             ObjectID.WL_SMALL_LOCKER -> {
-            // If already opened, ignore
-            if (current.flags.lockerOpened) return
+                // If already opened, ignore
+                if (current.flags.lockerOpened) return
 
-            // If shelf is not ordered, ignore
-            if (!current.flags.ornamentShelfOrdered) return
+                // If shelf is not ordered, ignore
+                if (!current.flags.ornamentShelfOrdered) return
 
-            // UI should now display the 4-digit input screen
-            // No state change here
+                // UI should now display the 4-digit input screen
+                // No state change here
             }
 
             // Wall Right

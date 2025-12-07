@@ -1,6 +1,6 @@
 package com.example.escaperoomapp.ui.screen
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -8,87 +8,97 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.escaperoomapp.model.ObjectID
 import com.example.escaperoomapp.viewmodel.GameViewModel
+import com.example.escaperoomapp.R
 
 @Composable
 fun WallLeftScreen(vm: GameViewModel) {
-    val state = vm.gameState.value
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+
     ) {
 
-        // ===== 3×3 PAINTING GRID (Dot puzzle) =====
-        Column {
-            repeat(3) { row ->
-                Row {
-                    repeat(3) { col ->
-                        Box(
-                            modifier = Modifier
-                                .size(70.dp)
-                                .background(Color.Gray)
-                                .padding(4.dp)
-                                .clickable { vm.interact(ObjectID.WC_DOT_PANEL) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("•")
-                        }
+        // -----------------------
+        // FULL WALL IMAGE
+        // -----------------------
+        Image(
+            painter = painterResource(id = R.drawable.left_wall_nosnowmannofire),
+            contentDescription = "Left Wall",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        // -----------------------
+        // PAINTING GRID ZONE (big area)
+        // Approx: Left half of the wall
+        // -----------------------
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Spacer(Modifier.height(100.dp))
+
+            // -----------------------
+            // PAINTING GRID AREA
+            // Top half
+            // -----------------------
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .fillMaxHeight(0.45f)
+                    .clickable {
+                        // Later: painting puzzle
+                        vm.openPaintingZoom()
                     }
-                }
-            }
-        }
+            )
 
-        Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(30.dp))
 
-        // ===== LOCKER (4-digit) =====
-        Box(
-            modifier = Modifier
-                .size(160.dp, 90.dp)
-                .background(Color.DarkGray)
-                .clickable { vm.interact(ObjectID.WL_SMALL_LOCKER) },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                if (state.flags.lockerOpened) "LOCKER (opened)" else "LOCKER (locked)"
+            // -----------------------
+            // SHELF AREA (full width)
+            // -----------------------
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .clickable { vm.isShelfZoomOpen.value = true } // ← OPEN ZOOM ONLY
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            // -----------------------
+            // FIREPLACE AREA (centered, half width)
+            // -----------------------
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.4f)
+                    .height(150.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .clickable { vm.interact(ObjectID.WL_FIREPLACE) }
             )
         }
-
-        Spacer(Modifier.height(24.dp))
-
-        // ===== ORNAMENT SHELF =====
-        Box(
-            modifier = Modifier
-                .size(200.dp, 60.dp)
-                .background(Color(0xFF8B4513))
-                .clickable { vm.interact(ObjectID.WL_ORNAMENT_SHELF) },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                when {
-                    state.flags.ornamentShelfOrdered -> "ORNAMENT SHELF (ordered)"
-                    state.flags.ornamentPlaced -> "ORNAMENT (placed)"
-                    else -> "ORNAMENT SHELF"
-                }
+            /*
+            // -----------------------
+            // LOCKER ZONE (small box on shelf)
+            // Approx: right side of shelf
+            // -----------------------
+            Box(
+                modifier = Modifier
+                    .padding(end = 40.dp, top = 40.dp)
+                    .size(70.dp)
+                    .clickable { vm.interact(ObjectID.WL_SMALL_LOCKER) }
             )
-        }
 
-        Spacer(Modifier.height(24.dp))
+             */
 
-        // ===== FIREPLACE =====
-        Box(
-            modifier = Modifier
-                .size(200.dp, 120.dp)
-                .background(if (state.flags.fireplaceLit) Color.Red else Color.DarkGray)
-                .clickable { vm.interact(ObjectID.WL_FIREPLACE) },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(if (state.flags.fireplaceLit) "FIRE (lit)" else "FIREPLACE")
-        }
     }
 }
-
