@@ -1,19 +1,25 @@
 package com.example.escaperoomapp.viewmodel
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
 import com.example.escaperoomapp.model.Direction
 import com.example.escaperoomapp.model.GameState
 import com.example.escaperoomapp.model.Item
 import com.example.escaperoomapp.model.ObjectID
 import com.example.escaperoomapp.model.Wall
-import java.util.Objects.toString
 
-class GameViewModel {
+class GameViewModel  : ViewModel() {
     var gameState = mutableStateOf(GameState())
         private set
 
-    var windowZoomEvent = mutableStateOf(false)
-        private set
+    // -----------------------
+    // ZOOM & PUZZLE DIALOG STATES
+    // -----------------------
+    var isWindowZoomOpen = mutableStateOf(false)
+    var isWreathPuzzleOpen = mutableStateOf(false)
+    var isPresentZoomOpen = mutableStateOf(false)
+    var isShelfZoomOpen = mutableStateOf(false)
+    var isDoorZoomOpen = mutableStateOf(false)
 
 
     // CHANGED BASED ON UI
@@ -23,31 +29,62 @@ class GameViewModel {
         Direction.RIGHT,
         Direction.LEFT
     )
-
+    // -----------------------
+    // MOVEMENT
+    // -----------------------
     fun moveLeft() {
-        val current = gameState.value
-
-        when (current.currentWall) {
-            Wall.WALLCENTER
-                -> gameState.value = current.copy(currentWall = Wall.WALLLEFT)
-            Wall.WALLRIGHT
-                -> gameState.value = current.copy(currentWall = Wall.WALLCENTER)
-
-            Wall.WALLLEFT -> null
+        val wall = gameState.value.currentWall
+        when (wall) {
+            Wall.WALLCENTER -> setWall(Wall.WALLLEFT)
+            Wall.WALLRIGHT -> setWall(Wall.WALLCENTER)
+            else -> {}
         }
     }
 
-    fun moveright() {
-        val current = gameState.value
-
-        when (current.currentWall) {
-            Wall.WALLCENTER
-                -> gameState.value = current.copy(currentWall = Wall.WALLRIGHT)
-            Wall.WALLRIGHT -> null
-            Wall.WALLLEFT
-                -> gameState.value = current.copy(currentWall = Wall.WALLCENTER)
+    fun moveRight() {
+        val wall = gameState.value.currentWall
+        when (wall) {
+            Wall.WALLCENTER -> setWall(Wall.WALLRIGHT)
+            Wall.WALLLEFT -> setWall(Wall.WALLCENTER)
+            else -> {}
         }
     }
+
+    private fun setWall(newWall: Wall) {
+        gameState.value = gameState.value.copy(currentWall = newWall)
+    }
+
+    // -----------------------
+    // CLICK EVENT FUNCTIONS
+    // -----------------------
+    fun onWindowClicked() {
+        isWindowZoomOpen.value = true
+    }
+
+    fun onWreathClicked() {
+        isWreathPuzzleOpen.value = true
+    }
+
+    fun onPresentClicked() {
+        isPresentZoomOpen.value = true
+    }
+
+    fun onShelfClicked() {
+        isShelfZoomOpen.value = true
+    }
+
+    fun onLockedDoorClicked() {
+        isDoorZoomOpen.value = true
+    }
+
+    // -----------------------
+    // CLOSE / DISMISS ZOOMS
+    // -----------------------
+    fun closeWindowZoom() { isWindowZoomOpen.value = false }
+    fun closeWreathPuzzle() { isWreathPuzzleOpen.value = false }
+    fun closePresentZoom() { isPresentZoomOpen.value = false }
+    fun closeShelfZoom() { isShelfZoomOpen.value = false }
+    fun closeDoorZoom() { isDoorZoomOpen.value = false }
 
     fun addItem(item: Item) {
         val current = gameState.value
@@ -219,7 +256,7 @@ class GameViewModel {
                 if (!hasItem(Item.OperaGlass)) return
 
                 // Trigger UI zoom event
-                windowZoomEvent.value = true
+                isWindowZoomOpen.value = true
             }
 
             ObjectID.WR_PRESENT_BOX  -> {
