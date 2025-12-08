@@ -24,11 +24,13 @@ class GameViewModel  : ViewModel() {
 
     // CHANGED BASED ON UI
     private val correctWreathSequence = listOf(
-        Direction.LEFT,
         Direction.RIGHT,
+        Direction.LEFT,
+        Direction.LEFT,
         Direction.RIGHT,
         Direction.LEFT
     )
+
     // -----------------------
     // MOVEMENT
     // -----------------------
@@ -81,7 +83,6 @@ class GameViewModel  : ViewModel() {
     // CLOSE / DISMISS ZOOMS
     // -----------------------
     fun closeWindowZoom() { isWindowZoomOpen.value = false }
-    fun closeWreathPuzzle() { isWreathPuzzleOpen.value = false }
     fun closePresentZoom() { isPresentZoomOpen.value = false }
     fun closeShelfZoom() { isShelfZoomOpen.value = false }
     fun closeDoorZoom() { isDoorZoomOpen.value = false }
@@ -139,13 +140,18 @@ class GameViewModel  : ViewModel() {
     fun openBloodDialog() { isBloodDialogOpen.value = true }
     fun closeBloodDialog() { isBloodDialogOpen.value = false }
 
+    var isWreathFailDialogOpen = mutableStateOf(false)
+    fun closeWreathFailDialog() { isWreathFailDialogOpen.value = false }
+
+
 
 
     fun addItem(item: Item) {
         val current = gameState.value
         val new = current.inventory + item
 
-        gameState.value = current.copy(inventory = new)
+        gameState.value = current.copy(inventory = new,
+            wreathInput = emptyList())
     }
 
     fun removeItem(item: Item) {
@@ -231,18 +237,22 @@ class GameViewModel  : ViewModel() {
             ObjectID.WC_WREATH_LEFT -> {
                 val current = gameState.value
 
-                if (!current.flags.fireplaceLit) return
-                if (current.flags.wreathShaken) return
+                // if (!current.flags.fireplaceLit) return
+                // if (current.flags.wreathShaken) return
 
-                val newInput = current.wreathInput + Direction.LEFT
+                wreathAnimState.value = "left"
+
+                val newInput = gameState.value.wreathInput + Direction.LEFT
                 processWreathInput(newInput)
             }
 
             ObjectID.WC_WREATH_RIGHT -> {
                 val current = gameState.value
 
-                if (!current.flags.fireplaceLit) return
-                if (current.flags.wreathShaken) return
+                // if (!current.flags.fireplaceLit) return
+                // if (current.flags.wreathShaken) return
+
+                wreathAnimState.value = "right"
 
                 val newInput = current.wreathInput + Direction.RIGHT
                 processWreathInput(newInput)
@@ -346,48 +356,75 @@ class GameViewModel  : ViewModel() {
     // Wreath animation state: "center", "left", "right"
     var wreathAnimState = mutableStateOf("center")
 
-    fun shakeWreathLeft() {
-        wreathAnimState.value = "left"
-        interact(ObjectID.WC_WREATH_LEFT)
-    }
+    var foundItemDialogOpen = mutableStateOf(false)
+    var lastFoundItem = mutableStateOf<Item?>(null)
 
-    fun shakeWreathRight() {
-        wreathAnimState.value = "right"
-        interact(ObjectID.WC_WREATH_RIGHT)
+    var selectedItem = mutableStateOf<Item?>(null)
+    var isItemInspectDialogOpen = mutableStateOf(false)
+
+    fun inspectItem(item: Item) {
+        selectedItem.value = item
+        isItemInspectDialogOpen.value = true
     }
 
     fun processWreathInput(newInput: List<Direction>) {
         val current = gameState.value
 
-        // If sequence matches exactly → puzzle solved
+        // FULL MATCH → solve puzzle
         if (newInput == correctWreathSequence) {
 
-            addItem(Item.SnowmanOrnament)
+            println("🎄 Adding Snowman Ornament!")
+
+            val new = current.inventory + Item.Matchbox
 
             val updatedFlags = current.flags.copy(
                 wreathShaken = true,
                 windowOpened = true
             )
 
-            gameState.value = current.copy(
+            gameState.value = current.copy(inventory = new,
                 wreathInput = emptyList(),
                 flags = updatedFlags
             )
 
+            // trigger dialog
+            lastFoundItem.value = Item.Matchbox
+            foundItemDialogOpen.value = true
+
+            wreathAnimState.value = "center"
             return
         }
 
-        // If user exceeded the length but didn't match → reset
+        // INPUT TOO LONG → reset attempt
         if (newInput.size >= correctWreathSequence.size) {
+            // WRONG SEQUENCE → RESET + SHOW DIALOG
+            isWreathFailDialogOpen.value = true
+
             gameState.value = current.copy(wreathInput = emptyList())
+
+            // Reset animation too
+            wreathAnimState.value = "center"
             return
         }
 
-        // Otherwise continue building the sequence
+        // Otherwise continue building
         gameState.value = current.copy(
             wreathInput = newInput
         )
     }
+
+    fun resetWreathInput() {
+        val current = gameState.value
+        gameState.value = current.copy(wreathInput = emptyList())
+        wreathAnimState.value = "center"
+    }
+    fun closeWreathPuzzle() {
+        isWreathPuzzleOpen.value = false
+        resetWreathInput()
+    }
+
+
+
 
     fun solveLocker() {
         val current = gameState.value

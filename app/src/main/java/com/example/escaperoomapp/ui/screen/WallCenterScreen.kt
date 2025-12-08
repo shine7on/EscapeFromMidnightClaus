@@ -40,7 +40,7 @@ fun WallCenterScreen(vm: GameViewModel) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .offset(y = 140.dp)
+                    .offset(x = 15.dp, y = 200.dp)
                     .size(width = 130.dp, height = 130.dp)
                     .clickable { vm.onWreathClicked() }
                     .background(Color.Red)
@@ -50,7 +50,7 @@ fun WallCenterScreen(vm: GameViewModel) {
             Box(
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .offset(x = (-50).dp, y = 120.dp)
+                    .offset(x = (-40).dp, y = 100.dp)
                     .size(width = 30.dp, height = 50.dp)
                     .clickable { vm.onLockedDoorClicked() }
                     .background(Color.Red)
@@ -60,7 +60,7 @@ fun WallCenterScreen(vm: GameViewModel) {
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .offset(y = (-200).dp)
+                    .offset(x = 30.dp, y = (-180).dp)
                     .size(width = 100.dp, height = 100.dp)
                     .clickable { vm.openCabinetZoom() }
                     .background(Color.Red)

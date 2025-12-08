@@ -36,7 +36,6 @@ class MainActivity : ComponentActivity() {
                 Scaffold { innerPadding ->
                     NavGraph(modifier = Modifier.padding(innerPadding))
                 }
-
             }
         }
     }

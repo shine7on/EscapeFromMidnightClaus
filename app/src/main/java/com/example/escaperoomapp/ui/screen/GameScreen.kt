@@ -1,5 +1,6 @@
 package com.example.escaperoomapp.ui.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,25 +11,37 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import com.example.escaperoomapp.model.Item
 import com.example.escaperoomapp.model.Wall
 import com.example.escaperoomapp.viewmodel.GameViewModel
+import kotlin.collections.mapOf
+import com.example.escaperoomapp.R
+
+val iconMap: Map<Item, Int> = mapOf(
+    Item.SnowmanOrnament to R.drawable.item_snowman,
+    Item.Matchbox to R.drawable.item_matchbox,
+    Item.OperaGlass to R.drawable.item_opera
+    // Item.ChainCutter to R.drawable.item_cutter,
+    // Item.Key to R.drawable.item_key
+)
+
 
 @Composable
 fun GameScreen(
     backStack: NavBackStack<NavKey>,
 ) {
-    val vm = remember { GameViewModel() }
+    val vm: GameViewModel = viewModel()
     val state = vm.gameState.value
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-
         when (state.currentWall) {
             Wall.WALLLEFT -> WallLeftScreen(vm)
             Wall.WALLCENTER -> WallCenterScreen(vm)
@@ -68,12 +81,34 @@ fun GameScreen(
         if (vm.isDotPanelZoomOpen.value) {
             DotPanelZoomScreen(vm) { vm.closeDotPanelZoom() }
         }
+        if (vm.isWreathFailDialogOpen.value) {
+            WreathFailDialog { vm.closeWreathFailDialog() }
+        }
+
         /*
         if (vm.isBloodDialogOpen.value) {
             BloodDialog { vm.closeBloodDialog() }
         }
 
          */
+
+        if (vm.foundItemDialogOpen.value && vm.lastFoundItem.value != null) {
+            val item = vm.lastFoundItem.value!!
+            FoundItemDialog(
+                item = item,
+                iconRes = iconMap[item]!!,
+                onDismiss = { vm.foundItemDialogOpen.value = false }
+            )
+        }
+
+        if (vm.isItemInspectDialogOpen.value && vm.selectedItem.value != null) {
+            val item = vm.selectedItem.value!!
+            InspectItemDialog(
+                item = item,
+                iconRes = iconMap[item]!!,
+                onDismiss = { vm.isItemInspectDialogOpen.value = false }
+            )
+        }
 
 
         Row(
@@ -91,8 +126,6 @@ fun GameScreen(
     }
 }
 
-
-
 @Composable
 fun InventoryBar(
     vm: GameViewModel,
@@ -100,6 +133,7 @@ fun InventoryBar(
 ) {
     val state = vm.gameState.value
     val items = state.inventory
+
 
     Box(
         modifier = modifier
@@ -131,13 +165,15 @@ fun InventoryBar(
                 // Render each slot
                 for (i in 0 until maxSlots) {
                     if (i < items.size) {
+                        val item = items[i]
                         InventorySlot(
-                            imageName = "X", // plug image later
-                            filled = true
+                            iconRes = iconMap[item],
+                            filled = true,
+                            onClick = { vm.inspectItem(item) }
                         )
                     } else {
                         InventorySlot(
-                            imageName = "",
+                            iconRes = null,
                             filled = false
                         )
                     }
@@ -148,21 +184,21 @@ fun InventoryBar(
 }
 
 @Composable
-fun InventorySlot(imageName: String, filled: Boolean) {
+fun InventorySlot(iconRes: Int?, filled: Boolean, onClick: () -> Unit = {}) {
     Box(
         modifier = Modifier
             .size(50.dp)
             .background(
                 color = if (filled) Color(0xFF444444) else Color(0x55222222),
-                // shape = RoundedCornerShape(12.dp)
-            ),
+            )
+            .clickable(enabled = filled) { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        if (filled) {
-            // Real image goes here later
-            Text(
-                text = imageName.take(3).uppercase(),
-                color = Color.White
+        if (filled && iconRes != null) {
+            Image(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                modifier = Modifier.size(42.dp)
             )
         }
     }
