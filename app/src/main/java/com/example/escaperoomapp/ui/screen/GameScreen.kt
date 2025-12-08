@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import com.example.escaperoomapp.ui.screen.zoom.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,7 +49,7 @@ fun GameScreen(
         }
 
         if (vm.isWindowZoomOpen.value) WindowZoomScreen { vm.closeWindowZoom() }
-        if (vm.isPresentZoomOpen.value) PresentZoomScreen { vm.closePresentZoom() }
+        if (vm.isPresentZoomOpen.value) PresentZoomScreen(vm) { vm.closePresentZoom() }
         if (vm.isDoorZoomOpen.value) DoorZoomScreen(vm) { vm.closeDoorZoom() }
         if (vm.isPaintingZoomOpen.value) { PaintingZoomDialog { vm.closePaintingZoom() } }
         if (vm.isShelfZoomOpen.value) {
@@ -72,8 +71,6 @@ fun GameScreen(
         if (vm.isLockerZoomOpen.value) {
             LockerZoomScreen(vm) { vm.closeLockerZoom() }
         }
-
-        if (vm.isFireplaceZoomOpen.value) FireplaceZoomScreen(vm) { vm.closeFireplaceZoom() }
 
         // NEW
         if (vm.isCabinetZoomOpen.value) {
@@ -99,6 +96,12 @@ fun GameScreen(
 
         if (vm.isFireplaceLitDialogOpen.value) {
             FireplaceLitDialog { vm.closeFireLitDialog() }
+        }
+
+        if (vm.isFireplaceZoomOpen.value) FireplaceZoomScreen(vm) { vm.closeFireplaceZoom() }
+
+        if (vm.isTreeZoomOpen.value) {
+            TreeZoomScreen(vm) { vm.closeTreeZoom() }
         }
 
 

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
@@ -28,72 +29,66 @@ import com.example.escaperoomapp.viewmodel.GameViewModel
 @Composable
 fun WallRightScreen(vm: GameViewModel) {
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
+    val state = vm.gameState.value
 
+    // window image changes depending on curtain state
+    val rightWallImage = if (state.flags.windowOpened)
+        R.drawable.right_wall
+    else
+        R.drawable.right_wall
+
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
 
-        // -----------------------
-        // FULL WALL IMAGE
-        // -----------------------
         Image(
-            painter = painterResource(id = R.drawable.right_wall),
-            contentDescription = "Left Wall",
+            painter = painterResource(id = rightWallImage),
+            contentDescription = "Right Wall",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
 
-        // -----------------------
-        // PAINTING GRID ZONE (big area)
-        // Approx: Left half of the wall
-        // -----------------------
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        // Layout roughly aligned with your image
+        Box(
+            modifier = Modifier.fillMaxSize()
         ) {
 
-            Spacer(Modifier.height(100.dp))
-
-            // -----------------------
-            // PAINTING GRID AREA
-            // Top half
-            // -----------------------
+            // --------------- WINDOW ZONE ---------------
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .fillMaxHeight(0.45f)
-                    .clickable {
-                        // Later: painting puzzle
-                        vm.openPaintingZoom()
+                    .align(Alignment.Center)
+                    .offset((-80).dp, 50.dp)
+                    .size(180.dp, 150.dp)
+                    .clickable(state.flags.windowOpened) {
+                        vm.onWindowClicked()
                     }
+                    .background(Color.Red)
             )
 
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(20.dp))
 
-            // -----------------------
-            // SHELF AREA (full width)
-            // -----------------------
+            // --------------- TREE AREA ---------------
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .clickable { vm.isShelfZoomOpen.value = true } // ← OPEN ZOOM ONLY
+                    .align(Alignment.BottomEnd)
+                    .offset((-40).dp, (-150).dp)
+                    .size(120.dp, 240.dp)
+                    .clickable { vm.openTreeZoom() }
+                    .background(Color.Red)
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
 
-            // -----------------------
-            // FIREPLACE AREA (centered, half width)
-            // -----------------------
+            // --------------- PRESENT BOX ---------------
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.4f)
-                    .height(150.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .clickable { vm.interact(ObjectID.WL_FIREPLACE) }
+                    .align(Alignment.BottomCenter)
+                    .offset((-60).dp, (-150).dp)
+                    .size(160.dp, 100.dp)
+                    .clickable {
+                        vm.interact(ObjectID.WR_PRESENT_BOX)
+                    }
+                    .background(Color.Red)
             )
         }
     }

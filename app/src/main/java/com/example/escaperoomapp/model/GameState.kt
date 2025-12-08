@@ -5,7 +5,7 @@ package com.example.escaperoomapp.model
  */
 data class GameState(
     val currentWall: Wall = Wall.WALLCENTER,
-    val inventory: List<Item> = emptyList<Item>(),
+    val inventory: List<Item> = emptyList<Item>() + Item.Matchbox,
     val flags: PuzzleFlags = PuzzleFlags(),
     val wreathInput: List<Direction> = emptyList()
 )

@@ -32,7 +32,7 @@ fun ShelfZoomScreen(
     ) {
 
         val imageRes =
-            if (ornamentPlaced) R.drawable.shelf_zoom_nosnowman // FIX: shelf_zoom_withsnowman
+            if (ornamentPlaced) R.drawable.shelf_zoom_withsnowman
             else R.drawable.shelf_zoom_nosnowman
 
         Box(
@@ -53,11 +53,13 @@ fun ShelfZoomScreen(
                 Box(
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .size(120.dp)
+                        .offset(x = 90.dp)
+                        .size(50.dp)
                         .clickable {
                             vm.interact(ObjectID.WL_ORNAMENT_SHELF)
                             onDismiss()
                         }
+                        .background(Color.Red)
                 )
             }
 
@@ -66,6 +68,7 @@ fun ShelfZoomScreen(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .size(50.dp)
+                    .offset(y = 20.dp)
                     .background(Color.Red.copy(alpha = 0.3f))
                     .clickable { vm.openLockerZoom() }
             )

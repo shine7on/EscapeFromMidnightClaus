@@ -38,7 +38,7 @@ fun CabinetZoomScreen(
                 .fillMaxHeight()
         ) {
             Image(
-                painter = painterResource(id = R.drawable.wreath_zoom), //center_cabinet_zoom
+                painter = painterResource(id = R.drawable.cabinet_zoom),
                 contentDescription = "Cabinet",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit
@@ -47,33 +47,24 @@ fun CabinetZoomScreen(
             // TOP drawer → opera glass (reusing WC_SHELF_UNLOCKED logic)
             Box(
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .offset(y = 80.dp)
-                    .size(width = 220.dp, height = 90.dp)
+                    .align(Alignment.Center)
+                    .offset(x = (-10).dp, y = 1.dp)
+                    .size(width = 130.dp, height = 40.dp)
                     .clickable {
-                        vm.interact(ObjectID.WC_SHELF_UNLOCKED)
+                        vm.interact(ObjectID.WC_CABINET_UNLOCKED)
                     }
             )
 
             // BOTTOM drawer → 9-dot panel zoom
             Box(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .offset(y = (-40).dp)
-                    .size(width = 220.dp, height = 90.dp)
+                    .align(Alignment.Center)
+                    .offset(x = (-10).dp, y = 60.dp)
+                    .size(width = 130.dp, height = 40.dp)
                     .clickable {
                         vm.openDotPanelZoom()
                     }
             )
         }
-
-        Text(
-            text = "Top: something is inside.\nBottom: strange 9-dot device.",
-            color = Color.White,
-            fontSize = 13.sp,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp)
-        )
     }
 }

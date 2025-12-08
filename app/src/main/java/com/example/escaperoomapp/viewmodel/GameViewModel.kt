@@ -3,43 +3,76 @@ package com.example.escaperoomapp.viewmodel
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.escaperoomapp.model.Direction
-import com.example.escaperoomapp.model.GameState
-import com.example.escaperoomapp.model.Item
-import com.example.escaperoomapp.model.ObjectID
-import com.example.escaperoomapp.model.Wall
+import com.example.escaperoomapp.model.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class GameViewModel  : ViewModel() {
+class GameViewModel : ViewModel() {
+
+    // ============================================================
+    // CORE GAME STATE
+    // ============================================================
     var gameState = mutableStateOf(GameState())
         private set
 
-    // -----------------------
-    // ZOOM & PUZZLE DIALOG STATES
-    // -----------------------
+    private val correctWreathSequence = listOf(
+        Direction.RIGHT, Direction.LEFT, Direction.LEFT, Direction.RIGHT, Direction.LEFT
+    )
+
+
+    // ============================================================
+    // ZOOM & DIALOG STATES
+    // ============================================================
     var isWindowZoomOpen = mutableStateOf(false)
     var isWreathPuzzleOpen = mutableStateOf(false)
     var isPresentZoomOpen = mutableStateOf(false)
     var isShelfZoomOpen = mutableStateOf(false)
     var isDoorZoomOpen = mutableStateOf(false)
 
+    var isPaintingZoomOpen = mutableStateOf(false)
+    var isFireplaceZoomOpen = mutableStateOf(false)
+    var isLockerZoomOpen = mutableStateOf(false)
 
-    // CHANGED BASED ON UI
-    private val correctWreathSequence = listOf(
-        Direction.RIGHT,
-        Direction.LEFT,
-        Direction.LEFT,
-        Direction.RIGHT,
-        Direction.LEFT
-    )
+    var isCabinetZoomOpen = mutableStateOf(false)
+    var isDotPanelZoomOpen = mutableStateOf(false)
+    var isBloodDialogOpen = mutableStateOf(false)
 
-    // -----------------------
-    // MOVEMENT
-    // -----------------------
+    var isWreathFailDialogOpen = mutableStateOf(false)
+    var isFireplaceLitDialogOpen = mutableStateOf(false)
+
+
+    // ============================================================
+    // INVENTORY STATE
+    // ============================================================
+    var selectedItem = mutableStateOf<Item?>(null)
+    var lastItemTapTime = mutableStateOf(0L)
+
+    var isItemInspectDialogOpen = mutableStateOf(false)
+    var inspectingItem = mutableStateOf<Item?>(null)
+
+    var foundItemDialogOpen = mutableStateOf(false)
+    var lastFoundItem = mutableStateOf<Item?>(null)
+
+
+    // ============================================================
+    // FIREPLACE ANIMATION STATE
+    // ============================================================
+    var fireplaceFrame = mutableStateOf(0)      // 0=center, 1=left, 2=right
+    var isFireAnimating = mutableStateOf(false)
+
+
+    // ============================================================
+    // LOCKER INPUT STATE
+    // ============================================================
+    var lockerInput = mutableStateOf("")
+    private val lockerCode = "5324"
+
+
+    // ============================================================
+    // MOVEMENT LOGIC
+    // ============================================================
     fun moveLeft() {
-        val wall = gameState.value.currentWall
-        when (wall) {
+        when (gameState.value.currentWall) {
             Wall.WALLCENTER -> setWall(Wall.WALLLEFT)
             Wall.WALLRIGHT -> setWall(Wall.WALLCENTER)
             else -> {}
@@ -47,8 +80,7 @@ class GameViewModel  : ViewModel() {
     }
 
     fun moveRight() {
-        val wall = gameState.value.currentWall
-        when (wall) {
+        when (gameState.value.currentWall) {
             Wall.WALLCENTER -> setWall(Wall.WALLRIGHT)
             Wall.WALLLEFT -> setWall(Wall.WALLCENTER)
             else -> {}
@@ -56,114 +88,81 @@ class GameViewModel  : ViewModel() {
     }
 
     private fun setWall(newWall: Wall) {
+        // AUTO-CLOSE ALL ZOOMS WHEN CHANGING WALLS
+        isWindowZoomOpen.value = false
+        isWreathPuzzleOpen.value = false
+        isPresentZoomOpen.value = false
+        isShelfZoomOpen.value = false
+        isDoorZoomOpen.value = false
+        isPaintingZoomOpen.value = false
+        isFireplaceZoomOpen.value = false
+        isLockerZoomOpen.value = false
+        isCabinetZoomOpen.value = false
+        isDotPanelZoomOpen.value = false
+        isBloodDialogOpen.value = false
+
+        // this also stops fire animation if zoom was open
+        stopFireAnimation()
+
+        // CHANGE WALL
         gameState.value = gameState.value.copy(currentWall = newWall)
     }
 
-    // -----------------------
-    // CLICK EVENT FUNCTIONS
-    // -----------------------
-    fun onWindowClicked() {
-        isWindowZoomOpen.value = true
-    }
 
-    fun onWreathClicked() {
-        isWreathPuzzleOpen.value = true
-    }
+    // ============================================================
+    // ZOOM OPEN HELPERS
+    // ============================================================
+    fun onWindowClicked() { isWindowZoomOpen.value = true }
+    fun onWreathClicked() { isWreathPuzzleOpen.value = true }
+    fun onPresentClicked() { isPresentZoomOpen.value = true }
+    fun onShelfClicked() { isShelfZoomOpen.value = true }
+    fun onLockedDoorClicked() { isDoorZoomOpen.value = true }
 
-    fun onPresentClicked() {
-        isPresentZoomOpen.value = true
-    }
+    fun openPaintingZoom() { isPaintingZoomOpen.value = true }
+    fun openFireplaceZoom() { isFireplaceZoomOpen.value = true }
+    fun openLockerZoom() { isLockerZoomOpen.value = true }
 
-    fun onShelfClicked() {
-        isShelfZoomOpen.value = true
-    }
+    fun openCabinetZoom() { isCabinetZoomOpen.value = true }
+    fun openDotPanelZoom() { isDotPanelZoomOpen.value = true }
+    fun openBloodDialog() { isBloodDialogOpen.value = true }
 
-    fun onLockedDoorClicked() {
-        isDoorZoomOpen.value = true
-    }
+    fun openFireLitDialog() { isFireplaceLitDialogOpen.value = true }
 
-    // -----------------------
-    // CLOSE / DISMISS ZOOMS
-    // -----------------------
+    var isTreeZoomOpen = mutableStateOf(false)
+    fun openTreeZoom() { isTreeZoomOpen.value = true }
+    fun closeTreeZoom() { isTreeZoomOpen.value = false }
+
+
+
+    // ============================================================
+    // ZOOM CLOSE HELPERS
+    // ============================================================
     fun closeWindowZoom() { isWindowZoomOpen.value = false }
     fun closePresentZoom() { isPresentZoomOpen.value = false }
     fun closeShelfZoom() { isShelfZoomOpen.value = false }
     fun closeDoorZoom() { isDoorZoomOpen.value = false }
 
-    var isPaintingZoomOpen = mutableStateOf(false)
-
-    fun openPaintingZoom() {
-        isPaintingZoomOpen.value = true
-    }
-
-    fun closePaintingZoom() {
-        isPaintingZoomOpen.value = false
-    }
-
-    var isFireplaceZoomOpen = mutableStateOf(false)
-
-    fun openFireplaceZoom() {
-        isFireplaceZoomOpen.value = true
-    }
-
-    fun closeFireplaceZoom() {
-        isFireplaceZoomOpen.value = false
-    }
-
-    var isLockerZoomOpen = mutableStateOf(false)
-
-    fun openLockerZoom() { isLockerZoomOpen.value = true }
+    fun closePaintingZoom() { isPaintingZoomOpen.value = false }
+    fun closeFireplaceZoom() { isFireplaceZoomOpen.value = false }
     fun closeLockerZoom() { isLockerZoomOpen.value = false }
 
-    var lockerInput = mutableStateOf("")
-    private val lockerCode = "5324"
-
-    fun submitLockerCode() {
-        if (lockerInput.value == lockerCode) {
-            solveLocker()
-            closeLockerZoom()
-            // maybe show dialog later
-        } else {
-            lockerInput.value = ""
-        }
-    }
-
-    // Center wall zooms
-    var isCabinetZoomOpen = mutableStateOf(false)
-    var isDotPanelZoomOpen = mutableStateOf(false)
-    var isBloodDialogOpen = mutableStateOf(false)
-
-    // Open / close helpers
-    fun openCabinetZoom() { isCabinetZoomOpen.value = true }
     fun closeCabinetZoom() { isCabinetZoomOpen.value = false }
-
-    fun openDotPanelZoom() { isDotPanelZoomOpen.value = true }
     fun closeDotPanelZoom() { isDotPanelZoomOpen.value = false }
-
-    fun openBloodDialog() { isBloodDialogOpen.value = true }
     fun closeBloodDialog() { isBloodDialogOpen.value = false }
 
-    var isWreathFailDialogOpen = mutableStateOf(false)
     fun closeWreathFailDialog() { isWreathFailDialogOpen.value = false }
+    fun closeFireLitDialog() { isFireplaceLitDialogOpen.value = false }
 
-    var isFireplaceLitDialogOpen = mutableStateOf(false)
+    fun closeInspectDialog() { isItemInspectDialogOpen.value = false }
 
-    fun openFireLitDialog() {
-        isFireplaceLitDialogOpen.value = true
-    }
 
-    fun closeFireLitDialog() {
-        isFireplaceLitDialogOpen.value = false
-    }
-
-    var fireplaceFrame = mutableStateOf(0)
-    var isFireAnimating = mutableStateOf(false)
-
+    // ============================================================
+    // FIREPLACE ANIMATION (CLUE SEQUENCE)
+    // ============================================================
     fun startFireAnimation() {
         if (isFireAnimating.value) return
         isFireAnimating.value = true
 
-        // Convert puzzle sequence (R, L, L, R, L) into fire frames (2,1,1,2,1)
         val puzzleFrames = correctWreathSequence.map {
             when (it) {
                 Direction.LEFT -> 1
@@ -171,25 +170,22 @@ class GameViewModel  : ViewModel() {
             }
         }
 
-        // Build final animation: insert CENTER (0) between every step
         val sequence = mutableListOf<Int>()
         for (frame in puzzleFrames) {
             sequence.add(frame)
-            sequence.add(0) // CENTER after every step
+            sequence.add(0)     // center between each beat
         }
 
         viewModelScope.launch {
             while (isFireAnimating.value) {
 
-                // Play sequence with CENTER between each direction
                 for (frame in sequence) {
                     fireplaceFrame.value = frame
-                    delay(550) // readable pacing
+                    delay(550)
                 }
 
-                // END OF SEQUENCE: LONG PAUSE so players know loop restarted
                 fireplaceFrame.value = 0
-                delay(1300)
+                delay(1300) // loop restart cue
             }
         }
     }
@@ -199,331 +195,279 @@ class GameViewModel  : ViewModel() {
     }
 
 
-
-
+    // ============================================================
+    // ITEM INTERACTION
+    // ============================================================
     fun addItem(item: Item) {
         val current = gameState.value
-        val new = current.inventory + item
-
-        gameState.value = current.copy(inventory = new,
-            wreathInput = emptyList())
+        gameState.value = current.copy(
+            inventory = current.inventory + item,
+            wreathInput = emptyList()
+        )
     }
 
     fun removeItem(item: Item) {
         val current = gameState.value
-        val new = current.inventory - item
-
-        gameState.value = current.copy(inventory = new)
+        gameState.value = current.copy(inventory = current.inventory - item)
     }
 
-    fun hasItem(item: Item): Boolean {
-        val current = gameState.value
-
-        if (current.inventory.contains(item))
-            return true
-
-        return false
-    }
-
-    fun interact(id: ObjectID) {
-        val current = gameState.value
-
-        when (id) {
-
-            // Wall Center
-
-            // DONE
-            ObjectID.WC_SHELF_UNLOCKED -> {
-
-                // If already solved, ignore interaction
-                if (current.flags.openedShelf) return
-
-                // Add item to inventory
-                addItem(Item.OperaGlass)
-
-                // Update puzzle flag
-                val updatedFlags = current.flags.copy(
-                    openedShelf = true
-                )
-
-                // Apply new state
-                gameState.value = current.copy(
-                    flags = updatedFlags
-                )
-            }
-
-            ObjectID.WC_DOT_PANEL -> {
-
-                // If already solved, ignore interaction
-                if (current.flags.dotPanelSolved) return
-
-                // Add item to inventory
-                addItem(Item.Matchbox)
-
-                // Update puzzle flag
-                val updatedFlags = current.flags.copy(
-                    dotPanelSolved = true
-                )
-
-                // Apply new state
-                gameState.value = current.copy(
-                    flags = updatedFlags
-                )
-            }
-
-            // DONE
-            ObjectID.WC_DOOR  -> {
-
-                // Must have the key to unlock
-                if (!hasItem(Item.Key)) return
-
-                removeItem(Item.Key)
-
-                // Unlock the door
-                val updatedFlags = current.flags.copy(
-                    doorUnlocked = true
-                )
-
-                gameState.value = current.copy(
-                    flags = updatedFlags
-                )
-            }
-
-            ObjectID.WC_WREATH_LEFT -> {
-                val current = gameState.value
-
-                // if (!current.flags.fireplaceLit) return
-                // if (current.flags.wreathShaken) return
-
-                wreathAnimState.value = "left"
-
-                val newInput = gameState.value.wreathInput + Direction.LEFT
-                processWreathInput(newInput)
-            }
-
-            ObjectID.WC_WREATH_RIGHT -> {
-                val current = gameState.value
-
-                // if (!current.flags.fireplaceLit) return
-                // if (current.flags.wreathShaken) return
-
-                wreathAnimState.value = "right"
-
-                val newInput = current.wreathInput + Direction.RIGHT
-                processWreathInput(newInput)
-            }
+    fun hasItem(item: Item): Boolean =
+        gameState.value.inventory.contains(item)
 
 
-            // Wall Left
-
-            // DONE
-            ObjectID.WL_FIREPLACE -> {
-                // Always open zoom first
-                openFireplaceZoom()
-
-                if (current.flags.fireplaceLit) return
-
-                // Must have the match to fire
-                if (selectedItem.value == Item.Matchbox) {
-
-                    val new = current.inventory - Item.Matchbox
-                    selectedItem.value = null
-
-                    viewModelScope.launch {
-                        delay(450) // <-- slows transition so players SEE the action
-                        val updatedFlags = current.flags.copy(fireplaceLit = true)
-                        gameState.value = current.copy(flags = updatedFlags, inventory = new)
-
-                        // Show dialog
-                        openFireLitDialog()
-                    }
-                }
-            }
-
-            ObjectID.WL_ORNAMENT_SHELF -> {
-                // If ornament already placed, ignore
-                if (current.flags.ornamentPlaced || current.flags.ornamentShelfOrdered) return
-                // Must have the ornament to place one
-                if (!hasItem(Item.SnowmanOrnament)) return
-
-                removeItem(Item.SnowmanOrnament)
-
-                // Update puzzle flag
-                val updatedFlags = current.flags.copy(
-                    ornamentPlaced = true
-                )
-
-                // Apply new state
-                gameState.value = current.copy(
-                    flags = updatedFlags
-                )
-            }
-
-            // DONE
-            ObjectID.WL_SMALL_LOCKER -> {
-                // If already opened, ignore
-                if (current.flags.lockerOpened) return
-
-                // If shelf is not ordered, ignore
-                if (!current.flags.ornamentShelfOrdered) return
-
-                // UI should now display the 4-digit input screen
-                // No state change here
-            }
-
-            // Wall Right
-            // NOT DONE: UI NEEDED
-            ObjectID.WR_WINDOW  -> {
-                if (!current.flags.windowOpened) return
-                // If there is no opera glass, ignore
-                if (!hasItem(Item.OperaGlass)) return
-
-                // Trigger UI zoom event
-                isWindowZoomOpen.value = true
-            }
-
-            ObjectID.WR_PRESENT_BOX  -> {
-
-                if (current.flags.presentOpened) return
-                if (!current.flags.lockerOpened) return
-                if (!hasItem(Item.ChainCutter)) return
-
-                removeItem(Item.ChainCutter)
-                addItem(Item.Key)
-
-                // Update puzzle flag
-                val updatedFlags = current.flags.copy(
-                    presentOpened = true
-                )
-
-                // Apply new state
-                gameState.value = current.copy(
-                    flags = updatedFlags
-                )
-            }
-
-            ObjectID.WR_TREE   -> {
-                // If the ornaments are not lined correctly, ignore
-                if (!current.flags.ornamentShelfOrdered) return
-            }
-        }
-    }
-
-    // Wreath animation state: "center", "left", "right"
-    var wreathAnimState = mutableStateOf("center")
-
-    var foundItemDialogOpen = mutableStateOf(false)
-    var lastFoundItem = mutableStateOf<Item?>(null)
-
-
-    // --------------------
-    // ITEM SELECTION + INSPECTION
-    // --------------------
-    var selectedItem = mutableStateOf<Item?>(null)
-    var lastItemTapTime = mutableStateOf(0L)
-
-    // Dialog state
-    var isItemInspectDialogOpen = mutableStateOf(false)
-    var inspectingItem = mutableStateOf<Item?>(null)
-
-    fun closeInspectDialog() {
-        isItemInspectDialogOpen.value = false
-    }
-
-    // Called when tapping an item in the inventory
+    // ============================================================
+    // INVENTORY TAP HANDLING
+    // ============================================================
     fun onItemTapped(item: Item) {
         val now = System.currentTimeMillis()
 
-        // DETECT DOUBLE TAP → Inspect
         if (now - lastItemTapTime.value < 300) {
             inspectingItem.value = item
             isItemInspectDialogOpen.value = true
             return
         }
 
-        // SINGLE TAP → Select item
         selectedItem.value = item
         lastItemTapTime.value = now
     }
 
 
+    // ============================================================
+    // VERTICAL PUZZLE: WREATH
+    // ============================================================
+    var wreathAnimState = mutableStateOf("center")
 
     fun processWreathInput(newInput: List<Direction>) {
         val current = gameState.value
+        val item = Item.SnowmanOrnament
 
-        // FULL MATCH → solve puzzle
         if (newInput == correctWreathSequence) {
-
-            val new = current.inventory + Item.Matchbox
-
             val updatedFlags = current.flags.copy(
                 wreathShaken = true,
                 windowOpened = true
             )
 
-            gameState.value = current.copy(inventory = new,
+            gameState.value = current.copy(
+                inventory = current.inventory + item,
                 wreathInput = emptyList(),
                 flags = updatedFlags
             )
 
-            // trigger dialog
-            lastFoundItem.value = Item.Matchbox
+            lastFoundItem.value = item
             foundItemDialogOpen.value = true
 
             wreathAnimState.value = "center"
             return
         }
 
-        // INPUT TOO LONG → reset attempt
         if (newInput.size >= correctWreathSequence.size) {
-            // WRONG SEQUENCE → RESET + SHOW DIALOG
             isWreathFailDialogOpen.value = true
-
             gameState.value = current.copy(wreathInput = emptyList())
-
-            // Reset animation too
             wreathAnimState.value = "center"
             return
         }
 
-        // Otherwise continue building
-        gameState.value = current.copy(
-            wreathInput = newInput
-        )
+        gameState.value = current.copy(wreathInput = newInput)
     }
 
     fun resetWreathInput() {
-        val current = gameState.value
-        gameState.value = current.copy(wreathInput = emptyList())
+        gameState.value = gameState.value.copy(wreathInput = emptyList())
         wreathAnimState.value = "center"
     }
+
     fun closeWreathPuzzle() {
         isWreathPuzzleOpen.value = false
         resetWreathInput()
     }
 
+    // ============================================================
+    // PUZZLE: PAINTING & 9-DOT PANEL
+    // ============================================================
+    var dotPatternInput = mutableStateOf<List<Int>>(emptyList())
+    var activePattern = mutableStateOf<List<Int>>(emptyList())
+    var isDrawing = mutableStateOf(false)
 
+    private val correctDotPattern = listOf(1, 2, 5, 6, 9, 8, 7)
 
+    fun onGestureEnd() {
+        isDrawing.value = false
 
-    fun solveLocker() {
-        val current = gameState.value
+        if (activePattern.value == correctDotPattern) {
+            interact(ObjectID.WC_DOT_PANEL) // gives Matchbox
+        }
 
-        // If already opened, ignore
-        if (current.flags.lockerOpened) return
+        // Reset regardless
+        activePattern.value = emptyList()
+    }
 
-        // Reward item: ChainCutter
-        addItem(Item.ChainCutter)
+    fun onDotDragOver(index: Int) {
+        val current = activePattern.value
 
-        // Update puzzle flag
-        val updatedFlags = current.flags.copy(
-            lockerOpened = true
-        )
+        // Avoid duplicate dots
+        if (current.contains(index)) return
 
-        // Apply new state
-        gameState.value = current.copy(
-            flags = updatedFlags
-        )
+        activePattern.value = current + index
     }
 
 
+    private fun checkPattern(input: List<Int>) {
+        if (input == correctDotPattern) {
+            interact(ObjectID.WC_DOT_PANEL)
+            gameState.value = gameState.value.copy(
+                flags = gameState.value.flags.copy(dotPanelSolved = true)
+            )
+        } else {
+            // Wrong → reset
+            dotPatternInput.value = emptyList()
+        }
+    }
+
+
+    // ============================================================
+    // PUZZLE: LOCKER
+    // ============================================================
+    fun submitLockerCode() {
+        if (lockerInput.value == lockerCode) {
+            solveLocker()
+            closeLockerZoom()
+        } else lockerInput.value = ""
+    }
+
+    fun solveLocker() {
+        val current = gameState.value
+        if (current.flags.lockerOpened) return
+
+        val updated = current.flags.copy(lockerOpened = true)
+        addItem(Item.ChainCutter)
+
+        gameState.value = current.copy(flags = updated)
+    }
+
+
+    // ============================================================
+    // MAIN OBJECT INTERACTION SYSTEM
+    // ============================================================
+    fun interact(id: ObjectID) {
+        val current = gameState.value
+
+        when (id) {
+
+            // ---------------- WALL CENTER ----------------
+            ObjectID.WC_CABINET_UNLOCKED -> {
+                if (current.flags.openedShelf) return
+
+                gameState.value = current.copy(
+                    flags = current.flags.copy(openedShelf = true)
+                )
+
+                val updatedFlags = current.flags.copy(
+                    openedShelf = true
+                )
+
+                gameState.value = current.copy(
+                    inventory = current.inventory + Item.OperaGlass,
+                    flags = updatedFlags
+                )
+
+                lastFoundItem.value = Item.OperaGlass
+                foundItemDialogOpen.value = true
+
+                return
+            }
+
+            ObjectID.WC_DOT_PANEL -> {
+                if (current.flags.dotPanelSolved) return
+                addItem(Item.Matchbox)
+                gameState.value = current.copy(
+                    flags = current.flags.copy(dotPanelSolved = true)
+                )
+            }
+
+            ObjectID.WC_DOOR -> {
+                if (!hasItem(Item.Key)) return
+                removeItem(Item.Key)
+                gameState.value = current.copy(
+                    flags = current.flags.copy(doorUnlocked = true)
+                )
+            }
+
+            ObjectID.WC_WREATH_LEFT -> {
+                wreathAnimState.value = "left"
+                processWreathInput(gameState.value.wreathInput + Direction.LEFT)
+            }
+
+            ObjectID.WC_WREATH_RIGHT -> {
+                wreathAnimState.value = "right"
+                processWreathInput(gameState.value.wreathInput + Direction.RIGHT)
+            }
+
+
+            // ---------------- WALL LEFT ----------------
+            ObjectID.WL_FIREPLACE -> {
+                openFireplaceZoom()
+
+                if (current.flags.fireplaceLit) return
+
+                if (selectedItem.value == Item.Matchbox) {
+                    val newInventory = current.inventory - Item.Matchbox
+                    selectedItem.value = null
+
+                    viewModelScope.launch {
+                        delay(450)
+                        gameState.value = current.copy(
+                            flags = current.flags.copy(fireplaceLit = true),
+                            inventory = newInventory
+                        )
+                        openFireLitDialog()
+                    }
+                }
+            }
+
+            ObjectID.WL_ORNAMENT_SHELF -> {
+                if (current.flags.ornamentPlaced || current.flags.ornamentShelfOrdered) return
+
+                if (selectedItem.value == Item.SnowmanOrnament) {
+                    val newInventory = current.inventory - Item.SnowmanOrnament
+                    selectedItem.value = null
+
+
+                    gameState.value = current.copy(
+                            flags = current.flags.copy(ornamentPlaced = true),
+                            inventory = newInventory
+                        )
+
+                }
+            }
+
+            ObjectID.WL_SMALL_LOCKER -> {
+                if (current.flags.lockerOpened) return
+                if (!current.flags.ornamentShelfOrdered) return
+            }
+
+
+            // ---------------- WALL RIGHT ----------------
+            ObjectID.WR_WINDOW -> {
+                if (!current.flags.windowOpened) return
+                if (!hasItem(Item.OperaGlass)) return
+                isWindowZoomOpen.value = true
+            }
+
+            ObjectID.WR_PRESENT_BOX -> {
+                if (current.flags.presentOpened) return
+                // if (!current.flags.lockerOpened) return
+                // if (!hasItem(Item.ChainCutter)) return
+
+                removeItem(Item.ChainCutter)
+                addItem(Item.Key)
+
+                gameState.value = current.copy(
+                    flags = current.flags.copy(presentOpened = true)
+                )
+            }
+
+            ObjectID.WR_TREE -> {
+                if (!current.flags.ornamentShelfOrdered) return
+            }
+        }
+    }
 }

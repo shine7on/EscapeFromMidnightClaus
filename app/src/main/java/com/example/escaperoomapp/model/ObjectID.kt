@@ -2,7 +2,7 @@ package com.example.escaperoomapp.model
 
 enum class ObjectID {
     // Wall 1
-    WC_SHELF_UNLOCKED,
+    WC_CABINET_UNLOCKED,
     WC_DOT_PANEL,
     WC_DOOR,
     WC_WREATH_LEFT,
