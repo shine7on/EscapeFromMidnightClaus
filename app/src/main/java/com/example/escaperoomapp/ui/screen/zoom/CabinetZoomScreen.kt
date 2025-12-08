@@ -18,17 +18,11 @@ import com.example.escaperoomapp.model.ObjectID
 import com.example.escaperoomapp.viewmodel.GameViewModel
 
 @Composable
-fun WreathZoomScreen(
+fun CabinetZoomScreen(
     vm: GameViewModel,
     onDismiss: () -> Unit
 ) {
-    val anim = vm.wreathAnimState.value
-
-    val imageRes = when (anim) {
-        "left" -> R.drawable.wreath_left
-        "right" -> R.drawable.wreath_right
-        else -> R.drawable.wreath_zoom
-    }
+    val flags = vm.gameState.value.flags
 
     Box(
         modifier = Modifier
@@ -41,38 +35,45 @@ fun WreathZoomScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.7f)
+                .fillMaxHeight()
         ) {
-            // base wreath image (you can swap with left/right tilted variants later)
             Image(
-                painter = painterResource(id = R.drawable.wreath_zoom),
-                contentDescription = "Wreath",
+                painter = painterResource(id = R.drawable.wreath_zoom), //center_cabinet_zoom
+                contentDescription = "Cabinet",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit
             )
 
-            // Left half → LEFT input
+            // TOP drawer → opera glass (reusing WC_SHELF_UNLOCKED logic)
             Box(
                 modifier = Modifier
-                    .fillMaxHeight(0.3f)
-                    .fillMaxWidth(0.3f)
-                    .align(Alignment.CenterStart)
+                    .align(Alignment.TopCenter)
+                    .offset(y = 80.dp)
+                    .size(width = 220.dp, height = 90.dp)
                     .clickable {
-                        vm.interact(ObjectID.WC_WREATH_LEFT)
+                        vm.interact(ObjectID.WC_SHELF_UNLOCKED)
                     }
             )
 
-            // Right half → RIGHT input
+            // BOTTOM drawer → 9-dot panel zoom
             Box(
                 modifier = Modifier
-                    .fillMaxHeight(0.3f)
-                    .fillMaxWidth(0.3f)
-                    .align(Alignment.CenterEnd)
+                    .align(Alignment.BottomCenter)
+                    .offset(y = (-40).dp)
+                    .size(width = 220.dp, height = 90.dp)
                     .clickable {
-                        vm.interact(ObjectID.WC_WREATH_RIGHT)
+                        vm.openDotPanelZoom()
                     }
             )
         }
+
+        Text(
+            text = "Top: something is inside.\nBottom: strange 9-dot device.",
+            color = Color.White,
+            fontSize = 13.sp,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 32.dp)
+        )
     }
 }
-

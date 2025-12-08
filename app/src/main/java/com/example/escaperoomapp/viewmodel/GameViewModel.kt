@@ -106,6 +106,38 @@ class GameViewModel  : ViewModel() {
         isFireplaceZoomOpen.value = false
     }
 
+    var isLockerZoomOpen = mutableStateOf(false)
+
+    fun openLockerZoom() { isLockerZoomOpen.value = true }
+    fun closeLockerZoom() { isLockerZoomOpen.value = false }
+
+    var lockerInput = mutableStateOf("")
+    private val lockerCode = "5324"
+
+    fun submitLockerCode() {
+        if (lockerInput.value == lockerCode) {
+            solveLocker()
+            closeLockerZoom()
+            // maybe show dialog later
+        } else {
+            lockerInput.value = ""
+        }
+    }
+
+    // Center wall zooms
+    var isCabinetZoomOpen = mutableStateOf(false)
+    var isDotPanelZoomOpen = mutableStateOf(false)
+    var isBloodDialogOpen = mutableStateOf(false)
+
+    // Open / close helpers
+    fun openCabinetZoom() { isCabinetZoomOpen.value = true }
+    fun closeCabinetZoom() { isCabinetZoomOpen.value = false }
+
+    fun openDotPanelZoom() { isDotPanelZoomOpen.value = true }
+    fun closeDotPanelZoom() { isDotPanelZoomOpen.value = false }
+
+    fun openBloodDialog() { isBloodDialogOpen.value = true }
+    fun closeBloodDialog() { isBloodDialogOpen.value = false }
 
 
 
@@ -311,6 +343,19 @@ class GameViewModel  : ViewModel() {
         }
     }
 
+    // Wreath animation state: "center", "left", "right"
+    var wreathAnimState = mutableStateOf("center")
+
+    fun shakeWreathLeft() {
+        wreathAnimState.value = "left"
+        interact(ObjectID.WC_WREATH_LEFT)
+    }
+
+    fun shakeWreathRight() {
+        wreathAnimState.value = "right"
+        interact(ObjectID.WC_WREATH_RIGHT)
+    }
+
     fun processWreathInput(newInput: List<Direction>) {
         val current = gameState.value
 
@@ -342,19 +387,6 @@ class GameViewModel  : ViewModel() {
         gameState.value = current.copy(
             wreathInput = newInput
         )
-    }
-
-    fun markShelfOrdered() {
-        val current = gameState.value
-
-        // Already solved
-        if (current.flags.ornamentShelfOrdered) return
-
-        val updatedFlags = current.flags.copy(
-            ornamentShelfOrdered = true
-        )
-
-        gameState.value = current.copy(flags = updatedFlags)
     }
 
     fun solveLocker() {

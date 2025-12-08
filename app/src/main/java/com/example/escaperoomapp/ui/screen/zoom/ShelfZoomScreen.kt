@@ -5,22 +5,22 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.escaperoomapp.R
+import com.example.escaperoomapp.model.ObjectID
+import com.example.escaperoomapp.viewmodel.GameViewModel
 
 
 @Composable
 fun ShelfZoomScreen(
+    vm: GameViewModel,
     hasOrnament: Boolean,
     ornamentPlaced: Boolean,
-    onPlace: () -> Unit,
     onDismiss: () -> Unit
 ) {
     Box(
@@ -32,14 +32,14 @@ fun ShelfZoomScreen(
     ) {
 
         val imageRes =
-            if (ornamentPlaced) R.drawable.shelf_zoom_nosnowman
+            if (ornamentPlaced) R.drawable.shelf_zoom_nosnowman // FIX: shelf_zoom_withsnowman
             else R.drawable.shelf_zoom_nosnowman
 
         Box(
             modifier = Modifier
-                .fillMaxWidth(1f)
-                .fillMaxHeight(1f)
+                .fillMaxSize()
         ) {
+
             Image(
                 painter = painterResource(id = imageRes),
                 contentDescription = null,
@@ -47,20 +47,28 @@ fun ShelfZoomScreen(
                 contentScale = ContentScale.Fit
             )
 
-            // Only allow clicking to place ornament when:
-            // 1. User has item
-            // 2. Shelf is not already solved
+
+            // ORNAMENT placement area
             if (hasOrnament && !ornamentPlaced) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .size(120.dp)
                         .clickable {
-                            onPlace()
+                            vm.interact(ObjectID.WL_ORNAMENT_SHELF)
                             onDismiss()
                         }
                 )
             }
+
+            // LOCKER AREA (click to zoom to locker)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(50.dp)
+                    .background(Color.Red.copy(alpha = 0.3f))
+                    .clickable { vm.openLockerZoom() }
+            )
         }
     }
 }

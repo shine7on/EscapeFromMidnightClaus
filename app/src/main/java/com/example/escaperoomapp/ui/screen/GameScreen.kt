@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import com.example.escaperoomapp.model.Item
-import com.example.escaperoomapp.model.ObjectID
 import com.example.escaperoomapp.model.Wall
 import com.example.escaperoomapp.viewmodel.GameViewModel
 
@@ -37,22 +36,44 @@ fun GameScreen(
         }
 
         if (vm.isWindowZoomOpen.value) WindowZoomScreen { vm.closeWindowZoom() }
-        if (vm.isWreathPuzzleOpen.value) WreathZoomScreen { vm.closeWreathPuzzle() }
         if (vm.isPresentZoomOpen.value) PresentZoomScreen { vm.closePresentZoom() }
-        if (vm.isDoorZoomOpen.value) DoorZoomScreen { vm.closeDoorZoom() }
+        if (vm.isDoorZoomOpen.value) DoorZoomScreen(vm) { vm.closeDoorZoom() }
         if (vm.isPaintingZoomOpen.value) { PaintingZoomDialog { vm.closePaintingZoom() } }
         if (vm.isShelfZoomOpen.value) {
-            val flags = vm.gameState.value.flags
-
             ShelfZoomScreen(
+                vm = vm,
                 hasOrnament = vm.hasItem(Item.SnowmanOrnament),
-                ornamentPlaced = flags.ornamentPlaced,
-                onPlace = { vm.interact(ObjectID.WL_ORNAMENT_SHELF) },
+                ornamentPlaced = vm.gameState.value.flags.ornamentPlaced,
                 onDismiss = { vm.closeShelfZoom() }
             )
         }
+
+        if (vm.isWreathPuzzleOpen.value) {
+            WreathZoomScreen(
+                vm = vm,
+                onDismiss = { vm.closeWreathPuzzle() }
+            )
+        }
+
+        if (vm.isLockerZoomOpen.value) {
+            LockerZoomScreen(vm) { vm.closeLockerZoom() }
+        }
+
         if (vm.isFireplaceZoomOpen.value) FireplaceZoomScreen(vm) { vm.closeFireplaceZoom() }
 
+        // NEW
+        if (vm.isCabinetZoomOpen.value) {
+            CabinetZoomScreen(vm) { vm.closeCabinetZoom() }
+        }
+        if (vm.isDotPanelZoomOpen.value) {
+            DotPanelZoomScreen(vm) { vm.closeDotPanelZoom() }
+        }
+        /*
+        if (vm.isBloodDialogOpen.value) {
+            BloodDialog { vm.closeBloodDialog() }
+        }
+
+         */
 
 
         Row(

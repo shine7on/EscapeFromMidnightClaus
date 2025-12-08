@@ -86,19 +86,5 @@ fun WallLeftScreen(vm: GameViewModel) {
                     .clickable { vm.interact(ObjectID.WL_FIREPLACE) }
             )
         }
-            /*
-            // -----------------------
-            // LOCKER ZONE (small box on shelf)
-            // Approx: right side of shelf
-            // -----------------------
-            Box(
-                modifier = Modifier
-                    .padding(end = 40.dp, top = 40.dp)
-                    .size(70.dp)
-                    .clickable { vm.interact(ObjectID.WL_SMALL_LOCKER) }
-            )
-
-             */
-
     }
 }
