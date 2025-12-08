@@ -2,11 +2,14 @@ package com.example.escaperoomapp.viewmodel
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.escaperoomapp.model.Direction
 import com.example.escaperoomapp.model.GameState
 import com.example.escaperoomapp.model.Item
 import com.example.escaperoomapp.model.ObjectID
 import com.example.escaperoomapp.model.Wall
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class GameViewModel  : ViewModel() {
     var gameState = mutableStateOf(GameState())
@@ -143,6 +146,58 @@ class GameViewModel  : ViewModel() {
     var isWreathFailDialogOpen = mutableStateOf(false)
     fun closeWreathFailDialog() { isWreathFailDialogOpen.value = false }
 
+    var isFireplaceLitDialogOpen = mutableStateOf(false)
+
+    fun openFireLitDialog() {
+        isFireplaceLitDialogOpen.value = true
+    }
+
+    fun closeFireLitDialog() {
+        isFireplaceLitDialogOpen.value = false
+    }
+
+    var fireplaceFrame = mutableStateOf(0)
+    var isFireAnimating = mutableStateOf(false)
+
+    fun startFireAnimation() {
+        if (isFireAnimating.value) return
+        isFireAnimating.value = true
+
+        // Convert puzzle sequence (R, L, L, R, L) into fire frames (2,1,1,2,1)
+        val puzzleFrames = correctWreathSequence.map {
+            when (it) {
+                Direction.LEFT -> 1
+                Direction.RIGHT -> 2
+            }
+        }
+
+        // Build final animation: insert CENTER (0) between every step
+        val sequence = mutableListOf<Int>()
+        for (frame in puzzleFrames) {
+            sequence.add(frame)
+            sequence.add(0) // CENTER after every step
+        }
+
+        viewModelScope.launch {
+            while (isFireAnimating.value) {
+
+                // Play sequence with CENTER between each direction
+                for (frame in sequence) {
+                    fireplaceFrame.value = frame
+                    delay(550) // readable pacing
+                }
+
+                // END OF SEQUENCE: LONG PAUSE so players know loop restarted
+                fireplaceFrame.value = 0
+                delay(1300)
+            }
+        }
+    }
+
+    fun stopFireAnimation() {
+        isFireAnimating.value = false
+    }
+
 
 
 
@@ -269,19 +324,20 @@ class GameViewModel  : ViewModel() {
                 if (current.flags.fireplaceLit) return
 
                 // Must have the match to fire
-                if (!hasItem(Item.Matchbox)) return
+                if (selectedItem.value == Item.Matchbox) {
 
-                removeItem(Item.Matchbox)
+                    val new = current.inventory - Item.Matchbox
+                    selectedItem.value = null
 
-                // Update puzzle flag
-                val updatedFlags = current.flags.copy(
-                    fireplaceLit = true
-                )
+                    viewModelScope.launch {
+                        delay(450) // <-- slows transition so players SEE the action
+                        val updatedFlags = current.flags.copy(fireplaceLit = true)
+                        gameState.value = current.copy(flags = updatedFlags, inventory = new)
 
-                // Apply new state
-                gameState.value = current.copy(
-                    flags = updatedFlags
-                )
+                        // Show dialog
+                        openFireLitDialog()
+                    }
+                }
             }
 
             ObjectID.WL_ORNAMENT_SHELF -> {
@@ -359,21 +415,44 @@ class GameViewModel  : ViewModel() {
     var foundItemDialogOpen = mutableStateOf(false)
     var lastFoundItem = mutableStateOf<Item?>(null)
 
-    var selectedItem = mutableStateOf<Item?>(null)
-    var isItemInspectDialogOpen = mutableStateOf(false)
 
-    fun inspectItem(item: Item) {
-        selectedItem.value = item
-        isItemInspectDialogOpen.value = true
+    // --------------------
+    // ITEM SELECTION + INSPECTION
+    // --------------------
+    var selectedItem = mutableStateOf<Item?>(null)
+    var lastItemTapTime = mutableStateOf(0L)
+
+    // Dialog state
+    var isItemInspectDialogOpen = mutableStateOf(false)
+    var inspectingItem = mutableStateOf<Item?>(null)
+
+    fun closeInspectDialog() {
+        isItemInspectDialogOpen.value = false
     }
+
+    // Called when tapping an item in the inventory
+    fun onItemTapped(item: Item) {
+        val now = System.currentTimeMillis()
+
+        // DETECT DOUBLE TAP → Inspect
+        if (now - lastItemTapTime.value < 300) {
+            inspectingItem.value = item
+            isItemInspectDialogOpen.value = true
+            return
+        }
+
+        // SINGLE TAP → Select item
+        selectedItem.value = item
+        lastItemTapTime.value = now
+    }
+
+
 
     fun processWreathInput(newInput: List<Direction>) {
         val current = gameState.value
 
         // FULL MATCH → solve puzzle
         if (newInput == correctWreathSequence) {
-
-            println("🎄 Adding Snowman Ornament!")
 
             val new = current.inventory + Item.Matchbox
 

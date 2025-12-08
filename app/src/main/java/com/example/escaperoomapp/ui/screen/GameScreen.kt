@@ -2,6 +2,7 @@ package com.example.escaperoomapp.ui.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import com.example.escaperoomapp.ui.screen.zoom.*
@@ -85,12 +86,22 @@ fun GameScreen(
             WreathFailDialog { vm.closeWreathFailDialog() }
         }
 
-        /*
         if (vm.isBloodDialogOpen.value) {
             BloodDialog { vm.closeBloodDialog() }
         }
 
-         */
+        if (vm.isItemInspectDialogOpen.value) {
+            ItemInspectDialog(
+                item = vm.inspectingItem.value!!,
+                onDismiss = { vm.closeInspectDialog() }
+            )
+        }
+
+        if (vm.isFireplaceLitDialogOpen.value) {
+            FireplaceLitDialog { vm.closeFireLitDialog() }
+        }
+
+
 
         if (vm.foundItemDialogOpen.value && vm.lastFoundItem.value != null) {
             val item = vm.lastFoundItem.value!!
@@ -98,15 +109,6 @@ fun GameScreen(
                 item = item,
                 iconRes = iconMap[item]!!,
                 onDismiss = { vm.foundItemDialogOpen.value = false }
-            )
-        }
-
-        if (vm.isItemInspectDialogOpen.value && vm.selectedItem.value != null) {
-            val item = vm.selectedItem.value!!
-            InspectItemDialog(
-                item = item,
-                iconRes = iconMap[item]!!,
-                onDismiss = { vm.isItemInspectDialogOpen.value = false }
             )
         }
 
@@ -169,7 +171,8 @@ fun InventoryBar(
                         InventorySlot(
                             iconRes = iconMap[item],
                             filled = true,
-                            onClick = { vm.inspectItem(item) }
+                            isSelected = (vm.selectedItem.value == item),
+                            onClick = { vm.onItemTapped(item) }
                         )
                     } else {
                         InventorySlot(
@@ -184,14 +187,24 @@ fun InventoryBar(
 }
 
 @Composable
-fun InventorySlot(iconRes: Int?, filled: Boolean, onClick: () -> Unit = {}) {
+fun InventorySlot(
+    iconRes: Int?,
+    filled: Boolean,
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {}
+) {
+    val borderColor = if (isSelected) Color.Yellow else Color.Transparent
+    val borderWidth = if (isSelected) 3.dp else 0.dp
+
     Box(
         modifier = Modifier
             .size(50.dp)
             .background(
                 color = if (filled) Color(0xFF444444) else Color(0x55222222),
             )
-            .clickable(enabled = filled) { onClick() },
+            .clickable(enabled = filled) { onClick() }
+            .border(width = borderWidth, color = borderColor)   // ← highlight border
+            .padding(4.dp),
         contentAlignment = Alignment.Center
     ) {
         if (filled && iconRes != null) {
@@ -203,6 +216,7 @@ fun InventorySlot(iconRes: Int?, filled: Boolean, onClick: () -> Unit = {}) {
         }
     }
 }
+
 
 
 

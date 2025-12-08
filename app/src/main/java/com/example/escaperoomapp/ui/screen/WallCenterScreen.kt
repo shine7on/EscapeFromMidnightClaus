@@ -43,7 +43,6 @@ fun WallCenterScreen(vm: GameViewModel) {
                     .offset(x = 15.dp, y = 200.dp)
                     .size(width = 130.dp, height = 130.dp)
                     .clickable { vm.onWreathClicked() }
-                    .background(Color.Red)
             )
 
             // DOOR (tap to see lock zoom)
@@ -53,7 +52,6 @@ fun WallCenterScreen(vm: GameViewModel) {
                     .offset(x = (-40).dp, y = 100.dp)
                     .size(width = 30.dp, height = 50.dp)
                     .clickable { vm.onLockedDoorClicked() }
-                    .background(Color.Red)
             )
 
             // CABINET (books + drawers at bottom-right)
@@ -63,20 +61,16 @@ fun WallCenterScreen(vm: GameViewModel) {
                     .offset(x = 30.dp, y = (-180).dp)
                     .size(width = 100.dp, height = 100.dp)
                     .clickable { vm.openCabinetZoom() }
-                    .background(Color.Red)
             )
 
-            /*
             // BLOOD STAIN (dialog only)
             Box(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .offset(x = (-210).dp, y = (-40).dp)
-                    .size(width = 150.dp, height = 90.dp)
+                    .align(Alignment.Center)
+                    .offset(x = 140.dp, y = 50.dp)
+                    .size(width = 60.dp, height = 90.dp)
                     .clickable { vm.openBloodDialog() }
-                    .background(Color.Red)
             )
-             */
         }
     }
 }

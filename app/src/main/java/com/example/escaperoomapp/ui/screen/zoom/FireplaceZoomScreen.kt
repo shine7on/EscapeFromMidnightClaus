@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,6 +16,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.escaperoomapp.R
+import com.example.escaperoomapp.model.Direction
 import com.example.escaperoomapp.viewmodel.GameViewModel
 
 @Composable
@@ -22,20 +25,35 @@ fun FireplaceZoomScreen(
     onDismiss: () -> Unit
 ) {
     val state = vm.gameState.value
+    val frame = vm.fireplaceFrame.value   // ← FIREPLACE ANIMATION FRAME
 
-    // Select correct image
+    // Pick fireplace sprite based on animation frame
     val imageRes = when {
         !state.flags.fireplaceLit -> R.drawable.fireplace_off
-        else -> R.drawable.fireplace_center //  state.flags.wreathInput.isEmpty()
-        // state.wreathInput.lastOrNull()?.name == "LEFT" -> R.drawable.fireplace_center
-        // else -> R.drawable.fireplace_center
+        else -> when (frame) {
+            1 -> R.drawable.fireplace_left
+            2 -> R.drawable.fireplace_right
+            else -> R.drawable.fireplace_center
+        }
+    }
+
+    // Start animation when entering the screen, stop when leaving
+    DisposableEffect(Unit) {
+        vm.startFireAnimation()
+
+        onDispose {
+            vm.stopFireAnimation()
+        }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.55f))
-            .clickable { onDismiss() },
+            .clickable {
+                vm.stopFireAnimation()
+                onDismiss()
+            },
         contentAlignment = Alignment.Center
     ) {
         Card(
