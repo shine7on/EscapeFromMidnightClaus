@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.example.escaperoomapp.R
+import com.example.escaperoomapp.model.Item
+import com.example.escaperoomapp.model.ObjectID
 import com.example.escaperoomapp.viewmodel.GameViewModel
 
 @Composable
@@ -34,8 +36,8 @@ fun PresentZoomScreen(
     ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth(0.75f)
-                .fillMaxHeight(0.75f),
+                .fillMaxWidth()
+                .fillMaxHeight(),
             colors = CardDefaults.cardColors(
                 containerColor = Color(0xFF1E1E1E)
             )
@@ -43,9 +45,17 @@ fun PresentZoomScreen(
             Image(
                 painter = painterResource(id = R.drawable.present_zoom),
                 contentDescription = "Zoomed Present Box",
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        enabled = (vm.selectedItem.value == Item.Knife)
+                    ) {
+                        vm.interact(ObjectID.WR_PRESENT_BOX)
+                        onDismiss()
+                    },
                 contentScale = ContentScale.Fit
             )
         }
+
     }
 }

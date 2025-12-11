@@ -3,9 +3,12 @@ package com.example.escaperoomapp.ui.screen.zoom
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement.Center
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
@@ -13,7 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.escaperoomapp.R
+import com.example.escaperoomapp.model.Item
+import com.example.escaperoomapp.model.ObjectID
 import com.example.escaperoomapp.viewmodel.GameViewModel
 
 @Composable
@@ -37,7 +44,6 @@ fun FireplaceZoomScreen(
     // Start animation when entering the screen, stop when leaving
     DisposableEffect(Unit) {
         vm.startFireAnimation()
-
         onDispose {
             vm.stopFireAnimation()
         }
@@ -68,5 +74,29 @@ fun FireplaceZoomScreen(
                 contentScale = ContentScale.Fit
             )
         }
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(90.dp)
+                .offset(y = 10.dp)
+                .clickable {
+                    if (vm.selectedItem.value == Item.Matchbox) {
+                        vm.interact(ObjectID.WL_FIREPLACE)
+                    }
+                }
+        )
+        /*
+        Column(
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 200.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "The room feels warmer now.",
+                color = Color.LightGray,
+                fontSize = 12.sp
+            )
+        }
+
+         */
     }
 }

@@ -1,5 +1,6 @@
 package com.example.escaperoomapp.ui.screen.zoom
 
+import android.R.attr.delay
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,8 +22,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
+import androidx.lifecycle.viewModelScope
 import com.example.escaperoomapp.R
 import com.example.escaperoomapp.viewmodel.GameViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.time.delay
 
 @Composable
 fun LockerZoomScreen(
@@ -80,15 +85,17 @@ fun LockerZoomScreen(
                         modifier = Modifier
                             .offset(x = startX + col * gapX, y = startY + row * gapY)
                             .size(buttonSize)
-                            .background(Color.Red)
                             .clickable {
-                                if (label in listOf("*","#")) return@clickable
+                                // if (label in listOf("*","#")) return@clickable
                                 if (vm.lockerInput.value.length < 4) {
                                     vm.lockerInput.value += label
 
-                                    // Auto-submit when input reaches 4 digits
                                     if (vm.lockerInput.value.length == 4) {
-                                        vm.submitLockerCode()
+                                        // Let UI show 4th digit before resetting
+                                        vm.viewModelScope.launch {
+                                            delay(300)   // 300ms pause so user sees input
+                                            vm.submitLockerCode()
+                                        }
                                     }
                                 }
                             }
@@ -100,7 +107,7 @@ fun LockerZoomScreen(
 
         // === Input TEXT Display ===
         Column(
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 250.dp),
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 300.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(

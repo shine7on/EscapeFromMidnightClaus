@@ -50,7 +50,7 @@ fun CabinetZoomScreen(
                     .align(Alignment.Center)
                     .offset(x = (-10).dp, y = 1.dp)
                     .size(width = 130.dp, height = 40.dp)
-                    .clickable {
+                    .clickable(enabled = !flags.openedShelf) {
                         vm.interact(ObjectID.WC_CABINET_UNLOCKED)
                     }
             )
@@ -61,7 +61,7 @@ fun CabinetZoomScreen(
                     .align(Alignment.Center)
                     .offset(x = (-10).dp, y = 60.dp)
                     .size(width = 130.dp, height = 40.dp)
-                    .clickable {
+                    .clickable (enabled = !vm.gameState.value.flags.dotPanelSolved) {
                         vm.openDotPanelZoom()
                     }
             )

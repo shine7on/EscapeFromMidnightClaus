@@ -26,7 +26,7 @@ fun WallCenterScreen(vm: GameViewModel) {
     ) {
         // Full background
         Image(
-            painter = painterResource(id = R.drawable.center_wall), // <- rename to your file
+            painter = painterResource(id = R.drawable.center_wall),
             contentDescription = "Center Wall",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop

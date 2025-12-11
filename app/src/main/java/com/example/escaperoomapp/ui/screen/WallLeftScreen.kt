@@ -71,7 +71,6 @@ fun WallLeftScreen(vm: GameViewModel) {
                     .fillMaxWidth(0.8f)
                     .fillMaxHeight(0.45f)
                     .clickable {
-                        // Later: painting puzzle
                         vm.openPaintingZoom()
                     }
             )
@@ -85,7 +84,7 @@ fun WallLeftScreen(vm: GameViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp)
-                    .clickable { vm.isShelfZoomOpen.value = true } // ← OPEN ZOOM ONLY
+                    .clickable { vm.isShelfZoomOpen.value = true }
             )
 
             Spacer(Modifier.height(16.dp))
@@ -98,7 +97,7 @@ fun WallLeftScreen(vm: GameViewModel) {
                     .fillMaxWidth(0.4f)
                     .height(180.dp)
                     .align(Alignment.CenterHorizontally)
-                    .clickable { vm.interact(ObjectID.WL_FIREPLACE) }
+                    .clickable { vm.openFireplaceZoom() }
             )
         }
     }

@@ -66,7 +66,7 @@ fun WreathZoomScreen(
             Box(
                 modifier = Modifier
                     .fillMaxHeight(0.3f)
-                    .fillMaxWidth(0.3f)
+                    .fillMaxWidth(0.45f)
                     .align(Alignment.CenterStart)
                     .clickable {
                         vm.interact(ObjectID.WC_WREATH_LEFT)
@@ -77,7 +77,7 @@ fun WreathZoomScreen(
             Box(
                 modifier = Modifier
                     .fillMaxHeight(0.3f)
-                    .fillMaxWidth(0.3f)
+                    .fillMaxWidth(0.45f)
                     .align(Alignment.CenterEnd)
                     .clickable {
                         vm.interact(ObjectID.WC_WREATH_RIGHT)

@@ -19,7 +19,6 @@ import com.example.escaperoomapp.viewmodel.GameViewModel
 @Composable
 fun ShelfZoomScreen(
     vm: GameViewModel,
-    hasOrnament: Boolean,
     ornamentPlaced: Boolean,
     onDismiss: () -> Unit
 ) {
@@ -49,17 +48,16 @@ fun ShelfZoomScreen(
 
 
             // ORNAMENT placement area
-            if (hasOrnament && !ornamentPlaced) {
+            if (!ornamentPlaced) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .offset(x = 90.dp)
-                        .size(50.dp)
+                        .offset(x = 60.dp)
+                        .size(60.dp)
                         .clickable {
                             vm.interact(ObjectID.WL_ORNAMENT_SHELF)
                             onDismiss()
                         }
-                        .background(Color.Red)
                 )
             }
 
@@ -68,8 +66,7 @@ fun ShelfZoomScreen(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .size(50.dp)
-                    .offset(y = 20.dp)
-                    .background(Color.Red.copy(alpha = 0.3f))
+                    .offset(x = 10.dp, y = 20.dp)
                     .clickable { vm.openLockerZoom() }
             )
         }

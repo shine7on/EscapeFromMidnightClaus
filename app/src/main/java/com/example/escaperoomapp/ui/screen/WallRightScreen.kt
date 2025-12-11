@@ -33,7 +33,7 @@ fun WallRightScreen(vm: GameViewModel) {
 
     // window image changes depending on curtain state
     val rightWallImage = if (state.flags.windowOpened)
-        R.drawable.right_wall
+        R.drawable.right_wall_opened
     else
         R.drawable.right_wall
 
@@ -62,7 +62,6 @@ fun WallRightScreen(vm: GameViewModel) {
                     .clickable(state.flags.windowOpened) {
                         vm.onWindowClicked()
                     }
-                    .background(Color.Red)
             )
 
             Spacer(Modifier.height(20.dp))
@@ -73,8 +72,7 @@ fun WallRightScreen(vm: GameViewModel) {
                     .align(Alignment.BottomEnd)
                     .offset((-40).dp, (-150).dp)
                     .size(120.dp, 240.dp)
-                    .clickable { vm.openTreeZoom() }
-                    .background(Color.Red)
+                    .clickable { vm.interact(ObjectID.WR_TREE) }
             )
 
             Spacer(Modifier.height(20.dp))
@@ -88,7 +86,6 @@ fun WallRightScreen(vm: GameViewModel) {
                     .clickable {
                         vm.interact(ObjectID.WR_PRESENT_BOX)
                     }
-                    .background(Color.Red)
             )
         }
     }

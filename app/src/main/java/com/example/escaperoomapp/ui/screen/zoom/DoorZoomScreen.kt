@@ -23,7 +23,6 @@ fun DoorZoomScreen(
 ) {
     val state = vm.gameState.value
     val flags = state.flags
-    val hasKey = vm.hasItem(Item.Key)
 
     Box(
         modifier = Modifier
@@ -35,7 +34,7 @@ fun DoorZoomScreen(
 
         // Which image should show?
         val imageRes = if (flags.doorUnlocked)
-            R.drawable.door_zoom  // FIX: open the door
+            R.drawable.door_open  // FIX: open the door
         else
             R.drawable.door_zoom
 
@@ -57,19 +56,10 @@ fun DoorZoomScreen(
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .size(160.dp)
-                    .offset(x = (-40).dp)  // adjust based on image
+                    .size(130.dp)
+                    .offset(x = (-90).dp)  // adjust based on image
                     .clickable {
-
-                        when {
-                            flags.doorUnlocked -> {
-                                // Already open - maybe play door opening sound later
-                            }
-
-                            hasKey -> {
-                                vm.interact(ObjectID.WC_DOOR) // unlock
-                            }
-                        }
+                        vm.interact(ObjectID.WC_DOOR) // unlock
                     }
             )
         }

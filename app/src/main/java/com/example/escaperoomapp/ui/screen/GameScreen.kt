@@ -22,13 +22,14 @@ import com.example.escaperoomapp.model.Wall
 import com.example.escaperoomapp.viewmodel.GameViewModel
 import kotlin.collections.mapOf
 import com.example.escaperoomapp.R
+import com.example.escaperoomapp.ui.navigation.EndScreenRoute
 
 val iconMap: Map<Item, Int> = mapOf(
     Item.SnowmanOrnament to R.drawable.item_snowman,
     Item.Matchbox to R.drawable.item_matchbox,
-    Item.OperaGlass to R.drawable.item_opera
-    // Item.ChainCutter to R.drawable.item_cutter,
-    // Item.Key to R.drawable.item_key
+    Item.OperaGlass to R.drawable.item_opera,
+    Item.Knife to R.drawable.item_knife,
+    Item.Key to R.drawable.item_key
 )
 
 
@@ -48,14 +49,12 @@ fun GameScreen(
             Wall.WALLRIGHT -> WallRightScreen(vm)
         }
 
-        if (vm.isWindowZoomOpen.value) WindowZoomScreen { vm.closeWindowZoom() }
         if (vm.isPresentZoomOpen.value) PresentZoomScreen(vm) { vm.closePresentZoom() }
-        if (vm.isDoorZoomOpen.value) DoorZoomScreen(vm) { vm.closeDoorZoom() }
+        if (vm.isWindowZoomOpen.value) WindowZoomScreen(vm) {  vm.closeWindowZoom() }
         if (vm.isPaintingZoomOpen.value) { PaintingZoomDialog { vm.closePaintingZoom() } }
         if (vm.isShelfZoomOpen.value) {
             ShelfZoomScreen(
                 vm = vm,
-                hasOrnament = vm.hasItem(Item.SnowmanOrnament),
                 ornamentPlaced = vm.gameState.value.flags.ornamentPlaced,
                 onDismiss = { vm.closeShelfZoom() }
             )
@@ -94,14 +93,14 @@ fun GameScreen(
             )
         }
 
-        if (vm.isFireplaceLitDialogOpen.value) {
-            FireplaceLitDialog { vm.closeFireLitDialog() }
-        }
-
         if (vm.isFireplaceZoomOpen.value) FireplaceZoomScreen(vm) { vm.closeFireplaceZoom() }
 
         if (vm.isTreeZoomOpen.value) {
             TreeZoomScreen(vm) { vm.closeTreeZoom() }
+        }
+
+        if (vm.isOperaZoomOpen.value) {
+            OperaDeepZoomScreen { vm.isOperaZoomOpen.value = false }
         }
 
 
@@ -113,6 +112,17 @@ fun GameScreen(
                 iconRes = iconMap[item]!!,
                 onDismiss = { vm.foundItemDialogOpen.value = false }
             )
+        }
+
+        if (vm.isDoorZoomOpen.value) {
+            DoorZoomScreen(vm) {
+                vm.closeDoorZoom()
+
+                // ⭐ AFTER closing door zoom, check win condition
+                if (vm.isGameCompleted()) {
+                    backStack.add(EndScreenRoute)
+                }
+            }
         }
 
 

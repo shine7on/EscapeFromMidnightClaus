@@ -7,7 +7,6 @@ data class PuzzleFlags(
     val wreathShaken: Boolean = false,
     val windowOpened: Boolean = false,
     val ornamentPlaced: Boolean = false,
-    val ornamentShelfOrdered: Boolean = false,
     val lockerOpened: Boolean = false,
     val presentOpened: Boolean = false,
     val doorUnlocked: Boolean = false

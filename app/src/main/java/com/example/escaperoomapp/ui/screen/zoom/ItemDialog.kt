@@ -78,7 +78,7 @@ fun Item.displayName(): String = when(this) {
     Item.SnowmanOrnament -> "Snowman Ornament"
     Item.Matchbox -> "Matchbox"
     Item.OperaGlass -> "Opera Glass"
-    Item.ChainCutter -> "Chain Cutter"
+    Item.Knife -> "Knife"
     Item.Key -> "Key"
 }
 
@@ -162,31 +162,6 @@ fun BloodDialog(onDismiss: () -> Unit) {
                     textAlign = TextAlign.Center
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun FireplaceLitDialog(onDismiss: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.55f))
-            .clickable { onDismiss() },
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(40.dp)
-                .background(Color(0xFF202020))
-                .padding(24.dp)
-        ) {
-            Text(
-                text = "The fireplace lit up...\nThe room feels warmer now.",
-                color = Color.White,
-                fontSize = 18.sp,
-                lineHeight = 22.sp
-            )
         }
     }
 }

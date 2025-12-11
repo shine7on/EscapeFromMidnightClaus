@@ -4,6 +4,6 @@ sealed class Item {
     object OperaGlass : Item()
     object Matchbox : Item()
     object SnowmanOrnament : Item()
-    object ChainCutter : Item()
+    object Knife : Item()
     object Key : Item()
 }
