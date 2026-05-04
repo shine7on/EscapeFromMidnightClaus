@@ -7,9 +7,9 @@ Escape from Midnight Claus is a mobile escape-room game developed using Android 
 
 ## 📸 Screenshots
 
-| Gameplay | Puzzle | Game Over |
+| Start Screen | Screen 1 | Screen 2 |
 |----------|--------|-----------|
-| <img src="screenshots/gameplay.png" width="300"/> | <img src="screenshots/puzzle.png" width="300"/> | <img src="screenshots/gameover.png" width="300"/> |
+| <img src="screenshots/startscreen.png" width="300"/> | <img src="screenshots/mainscreen.png" width="300"/> | <img src="screenshots/item.png" width="300"/> |
 
 
 ---
